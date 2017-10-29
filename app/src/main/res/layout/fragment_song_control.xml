@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    tools:context="com.example.henly.musicplayer.SongControlFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <ImageButton
+        android:id="@+id/song_previous"
+        android:layout_width="70dp"
+        android:layout_height="60dp"
+        android:paddingLeft="20dp"
+        android:background="@mipmap/previous_btn"/>
+
+    <ImageButton
+        android:id="@+id/song_play_or_pause"
+        android:layout_width="70dp"
+        android:layout_height="60dp"
+        android:paddingLeft="20dp"
+        android:background="@mipmap/play_btn"/>
+
+    <ImageButton
+        android:id="@+id/song_next"
+        android:layout_width="70dp"
+        android:layout_height="60dp"
+        android:paddingLeft="20dp"
+        android:background="@mipmap/next_btn"/>
+    <ProgressBar android:id="@+id/song_progress"
+        android:layout_weight="3"
+        android:paddingLeft="20dp"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        />
+</LinearLayout>
