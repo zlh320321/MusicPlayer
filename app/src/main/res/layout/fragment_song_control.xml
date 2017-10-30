@@ -11,7 +11,7 @@
         android:id="@+id/song_previous"
         android:layout_width="70dp"
         android:layout_height="60dp"
-        android:paddingLeft="20dp"
+        android:layout_marginLeft="5dp"
         android:background="@mipmap/previous_btn"/>
 
     <ImageButton
@@ -25,11 +25,16 @@
         android:id="@+id/song_next"
         android:layout_width="70dp"
         android:layout_height="60dp"
-        android:paddingLeft="20dp"
+        android:layout_marginLeft="5dp"
         android:background="@mipmap/next_btn"/>
+    <TextView android:id="@+id/song_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:text="04:35"/>
     <ProgressBar android:id="@+id/song_progress"
         android:layout_weight="3"
-        android:paddingLeft="20dp"
+        android:layout_marginLeft="5dp"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
