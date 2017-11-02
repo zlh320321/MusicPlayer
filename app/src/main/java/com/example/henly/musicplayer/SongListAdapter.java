@@ -26,7 +26,6 @@ public class SongListAdapter extends CursorAdapter {
         String songSinger = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
         viewHolder.tv_song_name.setText(songName);
         viewHolder.tv_song_singer.setText(songSinger);
-        super.bindView(view, context, cursor);
     }
 
     @Override

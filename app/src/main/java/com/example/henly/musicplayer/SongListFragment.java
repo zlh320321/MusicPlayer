@@ -67,7 +67,7 @@ public class SongListFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_song_list, container, false);
         ListView listView = (ListView) view.findViewById(R.id.song_list);
-        SongListAdapter songListAdapter = new SongListAdapter(this,cusor,false);
+        SongListAdapter songListAdapter = new SongListAdapter(this.getActivity(),MusicUtils.scanMusic(this.getActivity()),false);
         listView.setAdapter(songListAdapter);
         return view;
     }
