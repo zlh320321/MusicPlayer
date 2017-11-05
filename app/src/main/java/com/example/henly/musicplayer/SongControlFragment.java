@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 
 /**
@@ -26,6 +27,9 @@ public class SongControlFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private ImageButton mPlayOrPauseBtn;
+    private ImageButton mNextBtn;
+    private ImageButton mPreviousBtn;
 
     private OnFragmentInteractionListener mListener;
 
@@ -58,6 +62,10 @@ public class SongControlFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        mPlayOrPauseBtn = (ImageButton) getView().findViewById(R.id.song_play_or_pause);
+        mNextBtn = (ImageButton) getView().findViewById(R.id.song_next);
+        mPreviousBtn = (ImageButton) getView().findViewById(R.id.song_previous);
+
     }
 
     @Override

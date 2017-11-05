@@ -1,12 +1,16 @@
 package com.example.henly.musicplayer;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.graphics.ColorUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 
@@ -18,7 +22,7 @@ import android.widget.ListView;
  * Use the {@link SongListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SongListFragment extends Fragment {
+public class SongListFragment extends Fragment implements AdapterView.OnItemClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -29,11 +33,14 @@ public class SongListFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
-
+    private SongListAdapter mSongListAdapter;
     public SongListFragment() {
         // Required empty public constructor
     }
 
+    public interface SongItemClickListener {
+        public void songListItemClick(Song song);
+    }
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -67,8 +74,8 @@ public class SongListFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_song_list, container, false);
         ListView listView = (ListView) view.findViewById(R.id.song_list);
-        SongListAdapter songListAdapter = new SongListAdapter(this.getActivity(),MusicUtils.scanMusic(this.getActivity()),false);
-        listView.setAdapter(songListAdapter);
+        mSongListAdapter = new SongListAdapter(this.getActivity(),MusicUtils.scanMusic(this.getActivity()),false);
+        listView.setAdapter(mSongListAdapter);
         return view;
     }
 
@@ -94,6 +101,17 @@ public class SongListFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Cursor currentCursor = (Cursor) mSongListAdapter.getItem(position);
+        Song song = new Song();
+        song.mSongName = currentCursor.getString(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
+        song.mSongArtist = currentCursor.getString(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
+        song.mSongPath = currentCursor.getString(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
+        song.mSoneDuration = currentCursor.getInt(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+        song.mSongSize = currentCursor.getLong(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
     }
 
     /**
