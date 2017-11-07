@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.ColorUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +18,6 @@ import android.widget.ListView;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link SongListFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link SongListFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -32,8 +32,8 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
     private String mParam1;
     private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
     private SongListAdapter mSongListAdapter;
+    private SongItemClickListener mSongItemClickListener;
     public SongListFragment() {
         // Required empty public constructor
     }
@@ -76,31 +76,8 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         ListView listView = (ListView) view.findViewById(R.id.song_list);
         mSongListAdapter = new SongListAdapter(this.getActivity(),MusicUtils.scanMusic(this.getActivity()),false);
         listView.setAdapter(mSongListAdapter);
+        listView.setOnItemClickListener(this);
         return view;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     @Override
@@ -112,20 +89,11 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         song.mSongPath = currentCursor.getString(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
         song.mSoneDuration = currentCursor.getInt(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
         song.mSongSize = currentCursor.getLong(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
+        Log.i("zhanglh","onItemClick:"+song);
+        mSongItemClickListener.songListItemClick(song);
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    public void registerSongItemClickListener(SongItemClickListener listener){
+        mSongItemClickListener = listener;
     }
 }
