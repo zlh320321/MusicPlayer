@@ -96,4 +96,14 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
     public void registerSongItemClickListener(SongItemClickListener listener){
         mSongItemClickListener = listener;
     }
+    public Song getDefaultPlaySong(){
+        Cursor defaultCursor = (Cursor) mSongListAdapter.getItem(0);
+        Song song = new Song();
+        song.mSongName = defaultCursor.getString(defaultCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
+        song.mSongArtist = defaultCursor.getString(defaultCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
+        song.mSongPath = defaultCursor.getString(defaultCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
+        song.mSoneDuration = defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+        song.mSongSize = defaultCursor.getLong(defaultCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
+        return song;
+    }
 }

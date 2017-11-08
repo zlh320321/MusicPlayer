@@ -6,12 +6,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
+        android:maxEms="15"
+        android:maxLines="1"
+        android:ellipsize="marquee"
         android:layout_marginStart="20dp"
-        android:text="东风破"/>
+        android:textSize="25dp"
+        android:textColor="@android:color/holo_blue_light"/>
     <TextView android:id="@+id/song_singer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="20dp"
-        android:text="周杰伦"/>
+        android:maxEms="10"
+        android:maxLines="1"
+        android:ellipsize="marquee"
+        android:textColor="@android:color/holo_green_light"
+        android:textSize="20dp"/>
 </RelativeLayout>

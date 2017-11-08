@@ -21,27 +21,37 @@ public class PlayService extends Service {
     }
 
     public class PlayBinder extends Binder {
-
+        private MediaPlayer mPlayer = new MediaPlayer();
         public void play(Song song){
             try {
-            Log.i("zhanglh","play song:"+song);
-            MediaPlayer player = MediaPlayer.create(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
-            player.start();
+                if (song != null) {
+                    mPlayer.reset();
+                    mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
+                    mPlayer.prepare();
+                    mPlayer.start();
+                } else {
+                    mPlayer.start();
+                }
             } catch (Exception e) {
 
             }
         }
 
         public void pause(){
-
+            if (mPlayer.isPlaying()) {
+                mPlayer.pause();
+            }
         }
 
-        public long getSongDuration(){
-            return 0;
+        public int getSongDuration(){
+            return mPlayer.getDuration();
         }
 
-        public void getCurrentProgress(){
-
+        public int getCurrentPosition(){
+            return mPlayer.getCurrentPosition();
+        }
+        public boolean isPlaying(){
+            return mPlayer.isPlaying();
         }
     }
 }
