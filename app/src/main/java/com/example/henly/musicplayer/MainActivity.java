@@ -2,8 +2,10 @@ package com.example.henly.musicplayer;
 
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -22,6 +24,11 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     public PlayService.PlayBinder mPlayServiceBinder;
     private SongListFragment mSongListFragment;
     private boolean mIsPausing = false;
+    private final static String MUSIC_PLAYER_SHARRED_PREFERENCE = "music_player_shared_preference";
+    private final static String CURRENT_POSITION = "current_position";
+    private final static String CURRENT_SONG_PATH = "current_song_path";
+    private Song mCurrentSong;
+    private SharedPreferences mSharedPreference;
     private ProgressBar mSongProgressBar;
     private TextView mSongCurrentDuration;
     private TextView mSongDuration;
@@ -61,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         setContentView(R.layout.activity_main);
         Intent serviceIntent = new Intent(this, PlayService.class);
         bindService(serviceIntent, mServiceConnection, Service.BIND_AUTO_CREATE);
+
+        mSharedPreference = getSharedPreferences(MUSIC_PLAYER_SHARRED_PREFERENCE, Context.MODE_PRIVATE);
 
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
