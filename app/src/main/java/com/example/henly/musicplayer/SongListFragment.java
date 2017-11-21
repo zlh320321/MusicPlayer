@@ -2,6 +2,7 @@ package com.example.henly.musicplayer;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -34,6 +35,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
 
     private SongListAdapter mSongListAdapter;
     private SongItemClickListener mSongItemClickListener;
+    private ListView mListView;
     public SongListFragment() {
         // Required empty public constructor
     }
@@ -73,10 +75,10 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_song_list, container, false);
-        ListView listView = (ListView) view.findViewById(R.id.song_list);
+        mListView = (ListView) view.findViewById(R.id.song_list);
         mSongListAdapter = new SongListAdapter(this.getActivity(),MusicUtils.scanMusic(this.getActivity()),false);
-        listView.setAdapter(mSongListAdapter);
-        listView.setOnItemClickListener(this);
+        mListView.setAdapter(mSongListAdapter);
+        mListView.setOnItemClickListener(this);
         return view;
     }
 
@@ -91,6 +93,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         song.mSongSize = currentCursor.getLong(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
         Log.i("zhanglh","onItemClick:"+song);
         mSongItemClickListener.songListItemClick(song);
+        mListView.getChildAt(position).findViewById(R.id.song_name).setBackgroundColor(Color.RED);
     }
 
     public void registerSongItemClickListener(SongItemClickListener listener){

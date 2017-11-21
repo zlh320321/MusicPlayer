@@ -31,10 +31,6 @@ public class PlayService extends Service {
 
     @Override
     public void onDestroy() {
-        SharedPreferences.Editor editor = mSharedPreference.edit();
-        editor.putInt(CURRENT_POSITION,mPlayer.getCurrentPosition());
-        editor.putString(CURRENT_SONG_PATH,mCurrentSong.mSongPath);
-        editor.apply();
         super.onDestroy();
     }
 
@@ -44,13 +40,15 @@ public class PlayService extends Service {
     }
 
     public class PlayBinder extends Binder {
-        public void play(Song song){
+        public void play(Song song,int position){
             try {
                 if (song != null) {
-                    mCurrentSong = song;
                     mPlayer.reset();
                     mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
                     mPlayer.prepare();
+                    if (position != 0) {
+                        mPlayer.seekTo(position);
+                    }
                     mPlayer.start();
                 } else {
                     mPlayer.start();
