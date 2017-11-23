@@ -93,7 +93,8 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         song.mSongSize = currentCursor.getLong(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
         Log.i("zhanglh","onItemClick:"+song);
         mSongItemClickListener.songListItemClick(song);
-        mListView.getChildAt(position).findViewById(R.id.song_name).setBackgroundColor(Color.RED);
+        mSongListAdapter.setmSelectItem(position);
+        mSongListAdapter.notifyDataSetInvalidated();
     }
 
     public void registerSongItemClickListener(SongItemClickListener listener){

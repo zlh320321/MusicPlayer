@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -56,10 +57,18 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mPlayServiceBinder = (PlayService.PlayBinder) service;
+            String currentSongPath = mSharedPreference.getString(CURRENT_SONG_PATH,"");
+            int currentSongPosition = mSharedPreference.getInt(CURRENT_POSITION,0);
+            if (!TextUtils.isEmpty(currentSongPath)) {
+                Song song = new Song();
+                song.mSongPath = currentSongPath;
+                play(song,currentSongPosition);
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            mPlayServiceBinder = null;
         }
     };
 
@@ -89,13 +98,6 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         mNextButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_next);
         mNextButton.setOnClickListener(this);
 
-        String currentSongPath = mSharedPreference.getString(CURRENT_SONG_PATH,"");
-        int currentSongPosition = mSharedPreference.getInt(CURRENT_POSITION,0);
-        if (!TextUtils.isEmpty(currentSongPath)) {
-            Song song = new Song();
-            song.mSongPath = currentSongPath;
-            play(song,currentSongPosition);
-        }
     }
 
     @Override
@@ -131,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     }
 
     private void play(Song song,int currentPosition) {
+        Log.i("MainActivity","play song "+mPlayServiceBinder);
         mPlayServiceBinder.play(song,currentPosition);
         mCurrentSong = song;
         updatePlayProgress(currentPosition);
