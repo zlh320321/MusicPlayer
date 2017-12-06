@@ -1,23 +1,18 @@
 package com.example.henly.musicplayer;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
-import android.text.TextUtils;
-import android.util.Log;
+import android.os.RemoteException;
 
 import java.io.File;
+import java.io.IOException;
 
 public class PlayService extends Service {
-
     private MediaPlayer mPlayer;
-
 
     public PlayService() {
     }
@@ -27,7 +22,7 @@ public class PlayService extends Service {
         // TODO: Return the communication channel to the service.
 
         mPlayer = new MediaPlayer();
-        return new PlayBinder();
+        return stub;
     }
 
     @Override
@@ -41,7 +36,7 @@ public class PlayService extends Service {
     }
 
     public class PlayBinder extends Binder {
-        public void play(Song song,int position){
+        public void play(int position) {
             try {
                 if (song != null) {
                     mPlayer.reset();
@@ -59,21 +54,103 @@ public class PlayService extends Service {
             }
         }
 
-        public void pause(){
+        public void pause() {
             if (mPlayer.isPlaying()) {
                 mPlayer.pause();
             }
         }
 
-        public int getSongDuration(){
+        public int getSongDuration() {
             return mPlayer.getDuration();
         }
 
-        public int getCurrentPosition(){
+        public int getCurrentPosition() {
             return mPlayer.getCurrentPosition();
         }
-        public boolean isPlaying(){
+
+        public boolean isPlaying() {
             return mPlayer.isPlaying();
         }
     }
+
+
+    IPlayService.Stub stub = new IPlayService.Stub() {
+
+        @Override
+        public boolean isPlaying() throws RemoteException {
+            return false;
+        }
+
+        @Override
+        public void stop() throws RemoteException {
+
+        }
+
+        @Override
+        public void pause() throws RemoteException {
+
+        }
+
+        @Override
+        public void play(int position) throws RemoteException {
+            try {
+                mPlayer.reset();
+                mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
+                mPlayer.prepare();
+                mPlayer.start();
+            } catch (IOException e) {
+                mPlayer.release();
+            }
+        }
+
+        @Override
+        public void prev() throws RemoteException {
+
+        }
+
+        @Override
+        public void next() throws RemoteException {
+
+        }
+
+        @Override
+        public long duration() throws RemoteException {
+            return 0;
+        }
+
+        @Override
+        public long position() throws RemoteException {
+            return 0;
+        }
+
+        @Override
+        public long seek(long pos) throws RemoteException {
+            return 0;
+        }
+
+        @Override
+        public String getTrackName() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public String getAlbumName() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public long getAlbumId() throws RemoteException {
+            return 0;
+        }
+
+        @Override
+        public String getArtistName() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public long getArtistId() throws RemoteException {
+            return 0;
+        }
+    };
 }
