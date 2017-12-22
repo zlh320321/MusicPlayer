@@ -23,8 +23,10 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements SongListFragment.SongItemClickListener, View.OnClickListener {
     public static final String SONG_LIST_FRAGMENT = "song_list_fragment";
+    public static final String SPLASH_FRAGMENT = "splash_fragment";
     public PlayService.PlayBinder mPlayServiceBinder;
     private SongListFragment mSongListFragment;
+    private SplashFragment mSplashFragment;
     private boolean mIsPausing = false;
     private final static String MUSIC_PLAYER_SHARRED_PREFERENCE = "music_player_shared_preference";
     private final static String CURRENT_POSITION = "current_position";
@@ -85,7 +87,8 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         FragmentTransaction ft = fm.beginTransaction();
         mSongListFragment = new SongListFragment();
         mSongListFragment.registerSongItemClickListener(this);
-        ft.add(R.id.fragment_container, mSongListFragment, SONG_LIST_FRAGMENT);
+        mSplashFragment = new SplashFragment();
+        ft.add(R.id.fragment_container, mSplashFragment, SPLASH_FRAGMENT);
         ft.commitAllowingStateLoss();
         Fragment songControlFragment = fm.findFragmentById(R.id.song_control_fragment);
         mSongProgressBar = (ProgressBar) songControlFragment.getView().findViewById(R.id.song_progress);

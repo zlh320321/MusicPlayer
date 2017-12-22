@@ -1,88 +1,58 @@
 package com.example.henly.musicplayer;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.graphics.Color;
-import android.provider.MediaStore;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CursorAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Created by Henly on 2017/10/30.
+ * Created by Henly on 2017/12/20.
  */
 
-public class SongListAdapter extends CursorAdapter {
-    private Context mContext;
-    private Cursor mCursor;
+public class SongListAdapter extends ArrayAdapter {
+    ArrayList<Song> mSongList = null;
     private int mSelectItem;
+    public SongListAdapter(@NonNull Context context, @LayoutRes int resource) {
+        super(context, resource);
+    }
 
-    public SongListAdapter(Context context, Cursor c, boolean autoRequery) {
-        super(context, c, autoRequery);
-        mContext = context;
-        mCursor = c;
+    public SongListAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List objects) {
+        super(context, resource, objects);
+        mSongList = (ArrayList<Song>) objects;
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
-        String songName = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-        String songSinger = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-        viewHolder.tv_song_name.setText(songName);
-        viewHolder.tv_song_singer.setText(songSinger);
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View view = null;
         if (convertView == null) {
-            view = newView(mContext,mCursor,parent);
+            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            view = inflater.inflate(R.layout.song_item_layout, parent, false);
+            ViewHolder viewHolder = new ViewHolder();
+            viewHolder.tv_song_name = (TextView) view.findViewById(R.id.song_name);
+            viewHolder.tv_song_singer = (TextView) view.findViewById(R.id.song_singer);
+            viewHolder.song_item_container = (RelativeLayout) view.findViewById(R.id.song_item_container);
+            view.setTag(viewHolder);
         } else {
-            view = convertView;
+            ViewHolder viewHolder = (ViewHolder)view.getTag();
+            Song song = getItem(position);
+            viewHolder.tv_song_name.setText(song.mSongName);
+            viewHolder.tv_song_singer.setText(song.mSongName);
         }
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
-        if (position == mSelectItem) {
-            viewHolder.song_item_container.setBackgroundColor(Color.RED);
-        } else {
-            viewHolder.song_item_container.setBackgroundColor(Color.TRANSPARENT);
-        }
-        bindView(view, mContext, mCursor);
         return view;
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        ViewHolder viewHolder = new ViewHolder();
-        LayoutInflater inflater=(LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE );
-        View view=inflater.inflate(R.layout.song_item_layout ,parent,false);
-        viewHolder.tv_song_name = (TextView) view.findViewById(R.id.song_name);
-        viewHolder.tv_song_singer = (TextView) view.findViewById(R.id.song_singer);
-        viewHolder.song_item_container = (RelativeLayout) view.findViewById(R.id.song_item_container);
-        view.setTag(viewHolder);
-        return view;
-    }
-
-    @Override
-    public Cursor getCursor() {
-        return super.getCursor();
-    }
-
-    @Override
-    public int getCount() {
-        return super.getCount();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return super.getItem(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return super.getItemId(position);
+    public Song getItem(int position) {
+        return mSongList.get(position);
     }
 
     public void setmSelectItem(int selectItem) {

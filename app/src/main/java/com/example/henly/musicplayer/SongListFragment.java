@@ -1,13 +1,9 @@
 package com.example.henly.musicplayer;
 
-import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.support.v4.graphics.ColorUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -76,7 +72,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_song_list, container, false);
         mListView = (ListView) view.findViewById(R.id.song_list);
-        mSongListAdapter = new SongListAdapter(this.getActivity(),MusicUtils.scanMusic(this.getActivity()),false);
+        mSongListAdapter = new SongListAdapter(getActivity(),R.layout.song_item_layout,MusicUtils.getMusicList());
         mListView.setAdapter(mSongListAdapter);
         mListView.setOnItemClickListener(this);
         return view;

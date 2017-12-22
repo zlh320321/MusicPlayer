@@ -38,6 +38,7 @@ public class PlayService extends Service {
     public class PlayBinder extends Binder {
         public void play(int position) {
             try {
+                Song song = MusicUtils.mSongList.get(position);
                 if (song != null) {
                     mPlayer.reset();
                     mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
@@ -45,8 +46,6 @@ public class PlayService extends Service {
                     if (position != 0) {
                         mPlayer.seekTo(position);
                     }
-                    mPlayer.start();
-                } else {
                     mPlayer.start();
                 }
             } catch (Exception e) {
