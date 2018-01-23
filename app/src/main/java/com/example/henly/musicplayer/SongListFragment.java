@@ -72,7 +72,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_song_list, container, false);
         mListView = (ListView) view.findViewById(R.id.song_list);
-        mSongListAdapter = new SongListAdapter(getActivity(),R.layout.song_item_layout,MusicUtils.getMusicList());
+        mSongListAdapter = new SongListAdapter(getActivity(),MusicUtils.getMusicList());
         mListView.setAdapter(mSongListAdapter);
         mListView.setOnItemClickListener(this);
         return view;

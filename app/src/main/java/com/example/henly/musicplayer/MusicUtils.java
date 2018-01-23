@@ -2,6 +2,7 @@ package com.example.henly.musicplayer;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 public class MusicUtils {
     public static ArrayList<Song> mSongList = new ArrayList<Song>();
     public static boolean mScanFinished = false;
-    public static void scanMusic(Context context) {
+    public static void scanMusic(Context context, Handler handler) {
         Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null,
                 null, MediaStore.Audio.AudioColumns.IS_MUSIC);
         if (cursor.moveToNext()) {
@@ -29,6 +30,7 @@ public class MusicUtils {
                 mSongList.add(song);
             } while (cursor.moveToNext());
             mScanFinished = true;
+            handler.sendEmptyMessage(MainActivity.SCAN_MUSIC_FINISHED);
         }
         cursor.close();
     }

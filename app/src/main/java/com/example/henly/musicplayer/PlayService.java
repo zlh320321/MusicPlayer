@@ -94,6 +94,7 @@ public class PlayService extends Service {
         public void play(int position) throws RemoteException {
             try {
                 mPlayer.reset();
+                Song song = MusicUtils.getMusicList().get(position);
                 mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
                 mPlayer.prepare();
                 mPlayer.start();
