@@ -37,7 +37,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
     }
 
     public interface SongItemClickListener {
-        public void songListItemClick(Song song);
+        public void songListItemClick(int position);
     }
     /**
      * Use this factory method to create a new instance of
@@ -80,15 +80,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Cursor currentCursor = (Cursor) mSongListAdapter.getItem(position);
-        Song song = new Song();
-        song.mSongName = currentCursor.getString(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME));
-        song.mSongArtist = currentCursor.getString(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
-        song.mSongPath = currentCursor.getString(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
-        song.mSoneDuration = currentCursor.getInt(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
-        song.mSongSize = currentCursor.getLong(currentCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
-        Log.i("zhanglh","onItemClick:"+song);
-        mSongItemClickListener.songListItemClick(song);
+        mSongItemClickListener.songListItemClick(position);
         mSongListAdapter.setmSelectItem(position);
         mSongListAdapter.notifyDataSetInvalidated();
     }

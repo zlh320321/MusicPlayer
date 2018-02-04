@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     public static final int SCAN_MUSIC_FINISHED = 1000;
     public IPlayService mPlayServiceBinder;
     private SongListFragment mSongListFragment;
-    private SplashFragment mSplashFragment;
+    private SplashScreen mSplashScreen;
     private boolean mIsPausing = false;
     private final static String MUSIC_PLAYER_SHARRED_PREFERENCE = "music_player_shared_preference";
     private final static String CURRENT_POSITION = "current_position";
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
                 case SCAN_MUSIC_FINISHED:
 //                    mFragmentTrans.replace(R.id.fragment_container,mSongListFragment);
 //                    mFragmentTrans.commitAllowingStateLoss();
+                    mSplashScreen.removeSplashScreen();
                     break;
             }
 
@@ -75,11 +77,13 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mPlayServiceBinder = IPlayService.Stub.asInterface(service);
+            Log.i("zhanglh","onServiceConnected: "+mPlayServiceBinder);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mPlayServiceBinder = null;
+            Log.i("zhanglh","onServiceDisconnected: "+mPlayServiceBinder);
         }
     };
 
@@ -94,14 +98,12 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         FragmentTransaction ft = mFragmentManager.beginTransaction();
         mSongListFragment = new SongListFragment();
         mSongListFragment.registerSongItemClickListener(this);
-        mSplashFragment = new SplashFragment();
-        ft.add(R.id.fragment_container, mSplashFragment, SPLASH_FRAGMENT);
+        mSplashScreen = new SplashScreen(this);
+        mSplashScreen.showSplash(R.mipmap.splash,SplashScreen.SLIDE_LEFT);
         ft.add(R.id.fragment_container, mSongListFragment, SONG_LIST_FRAGMENT);
-        ft.hide(mSongListFragment);
-        Fragment songControlFragment = mFragmentManager.findFragmentById(R.id.song_control_fragment);
-        ft.hide(songControlFragment);
+        //Fragment songControlFragment = mFragmentManager.findFragmentById(R.id.song_control_fragment);
         ft.commit();
-        mHandler.postDelayed(mScanMusicThread,3000);
+        mHandler.post(mScanMusicThread);
 //        mSongProgressBar = (ProgressBar) songControlFragment.getView().findViewById(R.id.song_progress);
 //        mSongCurrentDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_current_duration);
 //        mSongDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_duration);
@@ -118,11 +120,12 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     protected void onDestroy() {
         super.onDestroy();
         unbindService(mServiceConnection);
+        Log.i("zhanglh","onDestroy: "+mPlayServiceBinder);
     }
 
     @Override
-    public void songListItemClick(Song song) {
-        //startPlayOrPause(song);
+    public void songListItemClick(int position) {
+        startPlayOrPause(position);
     }
 
     private String convertSongDuration(int duration) {
@@ -141,6 +144,16 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
                 break;
         }
 
+    }
+
+    public void startPlayOrPause(int postion) {
+        try {
+            if (mPlayServiceBinder != null) {
+                mPlayServiceBinder.play(postion);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 }

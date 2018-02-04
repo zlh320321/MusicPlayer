@@ -1,6 +1,7 @@
 package com.example.henly.musicplayer;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -33,27 +34,32 @@ public class SongListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View view = null;
+        ViewHolder viewHolder = null;
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.song_item_layout, parent, false);
-            ViewHolder viewHolder = new ViewHolder();
-            viewHolder.tv_song_name = (TextView) view.findViewById(R.id.song_name);
-            viewHolder.tv_song_singer = (TextView) view.findViewById(R.id.song_singer);
-            viewHolder.song_item_container = (RelativeLayout) view.findViewById(R.id.song_item_container);
-            view.setTag(viewHolder);
+            convertView = inflater.inflate(R.layout.song_item_layout, parent, false);
+            viewHolder = new ViewHolder();
+            viewHolder.tv_song_name = (TextView) convertView.findViewById(R.id.song_name);
+            viewHolder.tv_song_singer = (TextView) convertView.findViewById(R.id.song_singer);
+            viewHolder.song_item_container = (RelativeLayout) convertView.findViewById(R.id.song_item_container);
+            convertView.setTag(viewHolder);
         } else {
-            ViewHolder viewHolder = (ViewHolder)view.getTag();
-            Song song = getItem(position);
-            viewHolder.tv_song_name.setText(song.mSongName);
-            viewHolder.tv_song_singer.setText(song.mSongName);
+            viewHolder = (ViewHolder)convertView.getTag();
         }
-        return view;
+        Song song = getItem(position);
+        if (mSelectItem == position) {
+            viewHolder.song_item_container.setBackgroundColor(Color.BLUE);
+        } else {
+            viewHolder.song_item_container.setBackgroundColor(Color.TRANSPARENT);
+        }
+        viewHolder.tv_song_name.setText(song.mSongName);
+        viewHolder.tv_song_singer.setText(song.mSongArtist);
+        return convertView;
     }
 
     @Override
     public int getCount() {
-        return 0;
+        return mSongList.size();
     }
 
     @Override
@@ -63,7 +69,7 @@ public class SongListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     public void setmSelectItem(int selectItem) {

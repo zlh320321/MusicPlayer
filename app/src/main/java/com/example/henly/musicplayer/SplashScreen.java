@@ -2,8 +2,11 @@ package com.example.henly.musicplayer;
 
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 /**
@@ -12,8 +15,12 @@ import android.widget.LinearLayout;
 
 public class SplashScreen {
     private Activity activity;
+    private Dialog mSplashDialog;
+    public final static int SLIDE_LEFT = 1;
+    public final static int SLIDE_UP = 2;
+    public final static int FADE_OUT = 3;
     public SplashScreen(Activity activity) {
-        activity = activity;
+        this.activity = activity;
     }
 
     public void showSplash (final int imageRes, final int animation) {
@@ -29,7 +36,34 @@ public class SplashScreen {
                 linearLayout.setOrientation(LinearLayout.VERTICAL);
                 linearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,0.0F));
 
+                if (mSplashDialog == null){
+                    mSplashDialog = new Dialog(activity,android.R.style.Theme_Translucent_NoTitleBar);
+                    mSplashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                    Window window = mSplashDialog.getWindow();
+                    switch (animation){
+                        case SLIDE_LEFT:
+                            window.setWindowAnimations(R.style.dialog_anim_slide_left);
+                            break;
+                        case SLIDE_UP:
+                            window.setWindowAnimations(R.style.dialog_anim_slide_up);
+                            break;
+                        case FADE_OUT:
+                            window.setWindowAnimations(R.style.dialog_anim_fade_out);
+                            break;
+                    }
+                    mSplashDialog.setContentView(linearLayout);
+                    mSplashDialog.setCancelable(false);
+                    mSplashDialog.show();
+                }
             }
         };
+        activity.runOnUiThread(splashRunnable);
+    }
+
+    public void removeSplashScreen() {
+        if (mSplashDialog != null && mSplashDialog.isShowing()) {
+            mSplashDialog.dismiss();
+            mSplashDialog = null;
+        }
     }
 }
