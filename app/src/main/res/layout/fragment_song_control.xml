@@ -10,22 +10,22 @@
     <ImageButton
         android:id="@+id/song_previous"
         android:layout_width="70dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="5dp"
+        android:layout_height="70dp"
+        android:layout_marginLeft="15dp"
         android:background="@mipmap/previous_btn"/>
 
     <ImageButton
         android:id="@+id/song_play_or_pause"
         android:layout_width="70dp"
-        android:layout_height="60dp"
-        android:paddingLeft="20dp"
+        android:layout_height="70dp"
+        android:layout_marginLeft="30dp"
         android:background="@mipmap/play_btn"/>
 
     <ImageButton
         android:id="@+id/song_next"
         android:layout_width="70dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="5dp"
+        android:layout_height="70dp"
+        android:layout_marginLeft="30dp"
         android:background="@mipmap/next_btn"/>
     <TextView android:id="@+id/song_current_duration"
         android:layout_width="wrap_content"
@@ -43,4 +43,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"/>
+    <ImageButton
+        android:id="@+id/song_exit"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginLeft="30dp"
+        android:background="@mipmap/song_exit"/>
 </LinearLayout>

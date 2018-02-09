@@ -5,12 +5,14 @@
     android:layout_height="match_parent"
     tools:context="com.example.henly.musicplayer.MainActivity">
 
-    <FrameLayout android:id="@+id/fragment_container"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/song_control_fragment"
-        android:layout_height="wrap_content"></FrameLayout>
+        android:layout_above="@+id/song_control_fragment">
+    </android.support.v4.view.ViewPager>
 
     <fragment android:id="@+id/song_control_fragment"
         android:name="com.example.henly.musicplayer.SongControlFragment"

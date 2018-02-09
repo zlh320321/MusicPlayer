@@ -90,6 +90,12 @@ public class PlayService extends Service {
                     mPlayer.prepare();
                     mPlayer.start();
                     mCurrentPosition = position;
+                    mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+
+                        }
+                    });
                 }
             } catch (IOException e) {
                 mPlayer.release();

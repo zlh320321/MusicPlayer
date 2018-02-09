@@ -2,7 +2,6 @@ package com.example.henly.musicplayer;
 
 import android.app.Service;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -12,12 +11,15 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -26,8 +28,14 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     public static final String SONG_LIST_FRAGMENT = "song_list_fragment";
     public static final String SPLASH_FRAGMENT = "splash_fragment";
     public static final int SCAN_MUSIC_FINISHED = 1000;
+    private static final int TAB_INDEX_COUNT = 2;
+    private static final int TAB_INDEX_SONG_LIST = 0;
+    private static final int TAB_INDEX_SONG_LYRIC = 1;
     public IPlayService mPlayServiceBinder;
     private SongListFragment mSongListFragment;
+    private SongLyricFragment mSongLyricFragment;
+    private ViewPager mViewPager;
+    private ViewPagerAdapter mViewPagerAdapter;
     private SplashScreen mSplashScreen;
     private final static String MUSIC_PLAYER_SHARRED_PREFERENCE = "music_player_shared_preference";
     private final static String CURRENT_POSITION = "current_position";
@@ -82,13 +90,11 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mPlayServiceBinder = IPlayService.Stub.asInterface(service);
-            Log.i("zhanglh","onServiceConnected: "+mPlayServiceBinder);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mPlayServiceBinder = null;
-            Log.i("zhanglh","onServiceDisconnected: "+mPlayServiceBinder);
         }
     };
 
@@ -98,16 +104,21 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         setContentView(R.layout.activity_main);
         Intent serviceIntent = new Intent(this, PlayService.class);
         bindService(serviceIntent, mServiceConnection, Service.BIND_AUTO_CREATE);
-        Log.i("zhanglh","onCreate: "+mPlayServiceBinder);
         mFragmentManager = getSupportFragmentManager();
-        FragmentTransaction ft = mFragmentManager.beginTransaction();
         mSongListFragment = new SongListFragment();
+        mSongLyricFragment = new SongLyricFragment();
+
+        ActionBar actionBar =  getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        setUpViewPager();
+
         mSongListFragment.registerSongItemClickListener(this);
         mSplashScreen = new SplashScreen(this);
         mSplashScreen.showSplash(R.mipmap.splash,SplashScreen.SLIDE_LEFT);
-        ft.add(R.id.fragment_container, mSongListFragment, SONG_LIST_FRAGMENT);
         Fragment songControlFragment = mFragmentManager.findFragmentById(R.id.song_control_fragment);
-        ft.commit();
         mHandler.post(mScanMusicThread);
         mSongProgressBar = (ProgressBar) songControlFragment.getView().findViewById(R.id.song_progress);
         mSongCurrentDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_current_duration);
@@ -119,6 +130,13 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         mNextButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_next);
         mNextButton.setOnClickListener(this);
 
+    }
+
+    private void setUpViewPager() {
+        mViewPager = (ViewPager) findViewById(R.id.fragment_container);
+        mViewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+
+        mViewPager.setAdapter(mViewPagerAdapter);
     }
 
     @Override
@@ -188,4 +206,37 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         }
     }
 
+    public class ViewPagerAdapter extends FragmentPagerAdapter {
+
+        public ViewPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case TAB_INDEX_SONG_LIST:
+                    return mSongListFragment;
+                case TAB_INDEX_SONG_LYRIC:
+                    return mSongLyricFragment;
+            }
+            return null;
+        }
+
+        @Override
+        public int getCount() {
+            return TAB_INDEX_COUNT;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case TAB_INDEX_SONG_LIST:
+                    return "Song_List";
+                case TAB_INDEX_SONG_LYRIC:
+                    return "Song_Lyric";
+            }
+            return super.getPageTitle(position);
+        }
+    }
 }
