@@ -13,6 +13,7 @@ import java.io.IOException;
 
 public class PlayService extends Service {
     private MediaPlayer mPlayer;
+    private int mCurrentPosition;
 
     public PlayService() {
     }
@@ -53,23 +54,6 @@ public class PlayService extends Service {
             }
         }
 
-        public void pause() {
-            if (mPlayer.isPlaying()) {
-                mPlayer.pause();
-            }
-        }
-
-        public int getSongDuration() {
-            return mPlayer.getDuration();
-        }
-
-        public int getCurrentPosition() {
-            return mPlayer.getCurrentPosition();
-        }
-
-        public boolean isPlaying() {
-            return mPlayer.isPlaying();
-        }
     }
 
 
@@ -87,19 +71,29 @@ public class PlayService extends Service {
 
         @Override
         public void pause() throws RemoteException {
-
+            if(mPlayer.isPlaying()) {
+                mPlayer.pause();
+            }
         }
 
         @Override
         public void play(int position) throws RemoteException {
             try {
-                mPlayer.reset();
-                Song song = MusicUtils.getMusicList().get(position);
-                mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
-                mPlayer.prepare();
-                mPlayer.start();
+                if (position == mCurrentPosition) {
+                    if (!mPlayer.isPlaying()) {
+                        mPlayer.start();
+                    }
+                } else {
+                    mPlayer.reset();
+                    Song song = MusicUtils.getMusicList().get(position);
+                    mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
+                    mPlayer.prepare();
+                    mPlayer.start();
+                    mCurrentPosition = position;
+                }
             } catch (IOException e) {
                 mPlayer.release();
+                mCurrentPosition = 0;
             }
         }
 
@@ -114,18 +108,18 @@ public class PlayService extends Service {
         }
 
         @Override
-        public long duration() throws RemoteException {
-            return 0;
+        public int duration() throws RemoteException {
+            return mPlayer.getDuration();
         }
 
         @Override
-        public long position() throws RemoteException {
-            return 0;
+        public int position() throws RemoteException {
+            return mPlayer.getCurrentPosition();
         }
 
         @Override
-        public long seek(long pos) throws RemoteException {
-            return 0;
+        public void seek(int pos) throws RemoteException {
+            mPlayer.seekTo(pos);
         }
 
         @Override

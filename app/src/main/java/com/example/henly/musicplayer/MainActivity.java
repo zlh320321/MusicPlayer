@@ -29,11 +29,10 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     public IPlayService mPlayServiceBinder;
     private SongListFragment mSongListFragment;
     private SplashScreen mSplashScreen;
-    private boolean mIsPausing = false;
     private final static String MUSIC_PLAYER_SHARRED_PREFERENCE = "music_player_shared_preference";
     private final static String CURRENT_POSITION = "current_position";
     private final static String CURRENT_SONG_PATH = "current_song_path";
-    private Song mCurrentSong;
+    private int mCurrentSong;
     private SharedPreferences mSharedPreference;
     private ProgressBar mSongProgressBar;
     private TextView mSongCurrentDuration;
@@ -42,14 +41,14 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     private ImageButton mPreviousButton;
     private ImageButton mNextButton;
     private FragmentManager mFragmentManager;
+    private boolean mIsPlaying = false;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case SCAN_MUSIC_FINISHED:
-//                    mFragmentTrans.replace(R.id.fragment_container,mSongListFragment);
-//                    mFragmentTrans.commitAllowingStateLoss();
                     mSplashScreen.removeSplashScreen();
+                    mSongListFragment.refresh();
                     break;
             }
 
@@ -66,9 +65,15 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     private Runnable mUpdateProgressBarRunnable = new Runnable() {
         @Override
         public void run() {
-//            String currentSongDuration = convertSongDuration(mPlayServiceBinder.getCurrentPosition());
-//            mSongCurrentDuration.setText(currentSongDuration);
-//            mSongProgressBar.setProgress(mPlayServiceBinder.getCurrentPosition());
+            int currentPosition = 0;
+            try {
+                currentPosition = mPlayServiceBinder.position();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            String currentSongDuration = convertSongDuration(currentPosition);
+            mSongCurrentDuration.setText(currentSongDuration);
+            mSongProgressBar.setProgress(currentPosition);
             mHandler.postDelayed(mUpdateProgressBarRunnable, 1000);
         }
     };
@@ -91,9 +96,9 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Intent serviceIntent = new Intent(this, IPlayService.class);
+        Intent serviceIntent = new Intent(this, PlayService.class);
         bindService(serviceIntent, mServiceConnection, Service.BIND_AUTO_CREATE);
-
+        Log.i("zhanglh","onCreate: "+mPlayServiceBinder);
         mFragmentManager = getSupportFragmentManager();
         FragmentTransaction ft = mFragmentManager.beginTransaction();
         mSongListFragment = new SongListFragment();
@@ -101,18 +106,18 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         mSplashScreen = new SplashScreen(this);
         mSplashScreen.showSplash(R.mipmap.splash,SplashScreen.SLIDE_LEFT);
         ft.add(R.id.fragment_container, mSongListFragment, SONG_LIST_FRAGMENT);
-        //Fragment songControlFragment = mFragmentManager.findFragmentById(R.id.song_control_fragment);
+        Fragment songControlFragment = mFragmentManager.findFragmentById(R.id.song_control_fragment);
         ft.commit();
         mHandler.post(mScanMusicThread);
-//        mSongProgressBar = (ProgressBar) songControlFragment.getView().findViewById(R.id.song_progress);
-//        mSongCurrentDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_current_duration);
-//        mSongDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_duration);
-//        mPlayOrPauseButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_play_or_pause);
-//        mPlayOrPauseButton.setOnClickListener(this);
-//        mPreviousButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_previous);
-//        mPreviousButton.setOnClickListener(this);
-//        mNextButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_next);
-//        mNextButton.setOnClickListener(this);
+        mSongProgressBar = (ProgressBar) songControlFragment.getView().findViewById(R.id.song_progress);
+        mSongCurrentDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_current_duration);
+        mSongDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_duration);
+        mPlayOrPauseButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_play_or_pause);
+        mPlayOrPauseButton.setOnClickListener(this);
+        mPreviousButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_previous);
+        mPreviousButton.setOnClickListener(this);
+        mNextButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_next);
+        mNextButton.setOnClickListener(this);
 
     }
 
@@ -120,12 +125,11 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     protected void onDestroy() {
         super.onDestroy();
         unbindService(mServiceConnection);
-        Log.i("zhanglh","onDestroy: "+mPlayServiceBinder);
     }
 
     @Override
     public void songListItemClick(int position) {
-        startPlayOrPause(position);
+        startPlayOrPause(position,true);
     }
 
     private String convertSongDuration(int duration) {
@@ -138,7 +142,13 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.song_play_or_pause:
-                //startPlayOrPause(null);
+                startPlayOrPause(mCurrentSong,false);
+                break;
+            case R.id.song_next:
+                startPlayOrPause(mCurrentSong+1,true);
+                break;
+            case R.id.song_previous:
+                startPlayOrPause(mCurrentSong-1,true);
                 break;
             default:
                 break;
@@ -146,10 +156,32 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
 
     }
 
-    public void startPlayOrPause(int postion) {
+    public void startPlayOrPause(int position,boolean change) {
         try {
+            if (position == 0) {
+                mPreviousButton.setEnabled(false);
+            } else {
+                mPreviousButton.setEnabled(true);
+            }
+            if (position >= MusicUtils.getMusicList().size()) {
+                position = 0;
+                mCurrentSong = position;
+            }
             if (mPlayServiceBinder != null) {
-                mPlayServiceBinder.play(postion);
+                if (!mIsPlaying || change) {
+                    mPlayServiceBinder.play(position);
+                    mIsPlaying = true;
+                    mCurrentSong = position;
+                    int songDuration = mPlayServiceBinder.duration();
+                    mSongProgressBar.setMax(songDuration);
+                    mSongDuration.setText(convertSongDuration(songDuration));
+                    mPlayOrPauseButton.setBackgroundResource(R.mipmap.pause_btn);
+                    mHandler.post(mUpdateProgressBarRunnable);
+                } else {
+                    mPlayServiceBinder.pause();
+                    mPlayOrPauseButton.setBackgroundResource(R.mipmap.play_btn);
+                    mIsPlaying = false;
+                }
             }
         } catch (RemoteException e) {
             e.printStackTrace();

@@ -10,9 +10,9 @@ interface IPlayService {
         void play(int position);
         void prev();
         void next();
-        long duration();
-        long position();
-        long seek(long pos);
+        int duration();
+        int position();
+        void seek(int pos);
         String getTrackName();
         String getAlbumName();
         long getAlbumId();

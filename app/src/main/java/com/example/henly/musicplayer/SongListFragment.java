@@ -33,7 +33,6 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
     private SongItemClickListener mSongItemClickListener;
     private ListView mListView;
     public SongListFragment() {
-        // Required empty public constructor
     }
 
     public interface SongItemClickListener {
@@ -97,5 +96,8 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         song.mSoneDuration = defaultCursor.getInt(defaultCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
         song.mSongSize = defaultCursor.getLong(defaultCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
         return song;
+    }
+    public void refresh() {
+        mSongListAdapter.notifyDataSetChanged();
     }
 }
