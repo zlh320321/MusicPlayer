@@ -1,11 +1,17 @@
 package com.example.henly.musicplayer;
 
+import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import java.security.Permission;
 import java.util.ArrayList;
 
 /**
@@ -26,12 +32,12 @@ public class MusicUtils {
                 song.mSongPath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
                 song.mSoneDuration = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
                 song.mSongSize = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
-                Log.i("scanMusic",song.toString());
+                Log.i("zhanglh",song.toString());
                 mSongList.add(song);
             } while (cursor.moveToNext());
-            mScanFinished = true;
-            handler.sendEmptyMessage(MainActivity.SCAN_MUSIC_FINISHED);
         }
+        mScanFinished = true;
+        handler.sendEmptyMessage(MainActivity.SCAN_MUSIC_FINISHED);
         cursor.close();
     }
 

@@ -4,6 +4,7 @@ package com.example.henly.musicplayer;
 import android.app.Activity;
 import android.app.Dialog;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -61,7 +62,9 @@ public class SplashScreen {
     }
 
     public void removeSplashScreen() {
+        Log.i("zhanglh","removeSplashScreen");
         if (mSplashDialog != null && mSplashDialog.isShowing()) {
+            Log.i("zhanglh","removeSplashScreen success");
             mSplashDialog.dismiss();
             mSplashDialog = null;
         }

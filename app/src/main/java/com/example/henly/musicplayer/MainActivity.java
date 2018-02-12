@@ -1,18 +1,23 @@
 package com.example.henly.musicplayer;
 
+import android.Manifest;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -40,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     private final static String MUSIC_PLAYER_SHARRED_PREFERENCE = "music_player_shared_preference";
     private final static String CURRENT_POSITION = "current_position";
     private final static String CURRENT_SONG_PATH = "current_song_path";
+    public static int PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
     private int mCurrentSong;
     private SharedPreferences mSharedPreference;
     private ProgressBar mSongProgressBar;
@@ -63,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         }
     };
     private Runnable mScanMusicThread = new Runnable(){
-        Handler handler;
         @Override
         public void run() {
             MusicUtils.scanMusic(getApplicationContext(),mHandler);
@@ -114,12 +119,15 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         }
 
         setUpViewPager();
-
-        mSongListFragment.registerSongItemClickListener(this);
         mSplashScreen = new SplashScreen(this);
-        mSplashScreen.showSplash(R.mipmap.splash,SplashScreen.SLIDE_LEFT);
+        if (ContextCompat.checkSelfPermission(this , Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+        } else {
+            mSplashScreen.showSplash(R.mipmap.splash,SplashScreen.SLIDE_LEFT);
+            mHandler.post(mScanMusicThread);
+        }
+        mSongListFragment.registerSongItemClickListener(this);
         Fragment songControlFragment = mFragmentManager.findFragmentById(R.id.song_control_fragment);
-        mHandler.post(mScanMusicThread);
         mSongProgressBar = (ProgressBar) songControlFragment.getView().findViewById(R.id.song_progress);
         mSongCurrentDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_current_duration);
         mSongDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_duration);
@@ -157,16 +165,36 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                finish();
+            } else {
+                mSplashScreen.showSplash(R.mipmap.splash,SplashScreen.SLIDE_LEFT);
+                mHandler.post(mScanMusicThread);
+            }
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.song_play_or_pause:
                 startPlayOrPause(mCurrentSong,false);
                 break;
             case R.id.song_next:
-                startPlayOrPause(mCurrentSong+1,true);
+                try {
+                    mCurrentSong = mPlayServiceBinder.next();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.song_previous:
-                startPlayOrPause(mCurrentSong-1,true);
+                try {
+                    mCurrentSong = mPlayServiceBinder.prev();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 break;
             default:
                 break;
@@ -176,15 +204,6 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
 
     public void startPlayOrPause(int position,boolean change) {
         try {
-            if (position == 0) {
-                mPreviousButton.setEnabled(false);
-            } else {
-                mPreviousButton.setEnabled(true);
-            }
-            if (position >= MusicUtils.getMusicList().size()) {
-                position = 0;
-                mCurrentSong = position;
-            }
             if (mPlayServiceBinder != null) {
                 if (!mIsPlaying || change) {
                     mPlayServiceBinder.play(position);

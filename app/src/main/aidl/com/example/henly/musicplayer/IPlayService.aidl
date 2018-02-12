@@ -8,8 +8,8 @@ interface IPlayService {
         void stop();
         void pause();
         void play(int position);
-        void prev();
-        void next();
+        int prev();
+        int next();
         int duration();
         int position();
         void seek(int pos);
@@ -18,4 +18,5 @@ interface IPlayService {
         long getAlbumId();
         String getArtistName();
         long getArtistId();
+        int loopNextSong();
 }

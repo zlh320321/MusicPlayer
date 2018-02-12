@@ -20,11 +20,22 @@ public class PlayService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
 
         mPlayer = new MediaPlayer();
+        mPlayer.setOnCompletionListener(mOnCompletionListener);
         return stub;
     }
+
+    private MediaPlayer.OnCompletionListener mOnCompletionListener = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            try {
+                stub.next();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     @Override
     public void onDestroy() {
@@ -35,27 +46,6 @@ public class PlayService extends Service {
     public boolean onUnbind(Intent intent) {
         return super.onUnbind(intent);
     }
-
-    public class PlayBinder extends Binder {
-        public void play(int position) {
-            try {
-                Song song = MusicUtils.mSongList.get(position);
-                if (song != null) {
-                    mPlayer.reset();
-                    mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
-                    mPlayer.prepare();
-                    if (position != 0) {
-                        mPlayer.seekTo(position);
-                    }
-                    mPlayer.start();
-                }
-            } catch (Exception e) {
-                mPlayer.release();
-            }
-        }
-
-    }
-
 
     IPlayService.Stub stub = new IPlayService.Stub() {
 
@@ -77,7 +67,7 @@ public class PlayService extends Service {
         }
 
         @Override
-        public void play(int position) throws RemoteException {
+        public void play(final int position) throws RemoteException {
             try {
                 if (position == mCurrentPosition) {
                     if (!mPlayer.isPlaying()) {
@@ -90,12 +80,6 @@ public class PlayService extends Service {
                     mPlayer.prepare();
                     mPlayer.start();
                     mCurrentPosition = position;
-                    mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mp) {
-
-                        }
-                    });
                 }
             } catch (IOException e) {
                 mPlayer.release();
@@ -104,13 +88,25 @@ public class PlayService extends Service {
         }
 
         @Override
-        public void prev() throws RemoteException {
-
+        public int prev() throws RemoteException {
+            if (mCurrentPosition == 0) {
+                mCurrentPosition = MusicUtils.getMusicList().size()-1;
+            } else {
+                mCurrentPosition = mCurrentPosition - 1;
+            }
+            play(mCurrentPosition);
+            return mCurrentPosition;
         }
 
         @Override
-        public void next() throws RemoteException {
-
+        public int next() throws RemoteException {
+            if (mCurrentPosition >= MusicUtils.getMusicList().size()) {
+                mCurrentPosition = 0;
+            } else {
+                mCurrentPosition = mCurrentPosition + 1;
+            }
+            play(mCurrentPosition);
+            return mCurrentPosition;
         }
 
         @Override
@@ -150,6 +146,11 @@ public class PlayService extends Service {
 
         @Override
         public long getArtistId() throws RemoteException {
+            return 0;
+        }
+
+        @Override
+        public int loopNextSong() throws RemoteException {
             return 0;
         }
     };
