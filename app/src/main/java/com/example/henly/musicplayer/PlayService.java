@@ -7,13 +7,16 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 
-public class PlayService extends Service {
+public class PlayService extends Service implements IPlayService {
     private MediaPlayer mPlayer;
     private int mCurrentPosition;
+    private MyBinder mMyBinder = new MyBinder();
+    private IServiceDataToActivity mServiceDataToActivity;
 
     public PlayService() {
     }
@@ -23,17 +26,13 @@ public class PlayService extends Service {
 
         mPlayer = new MediaPlayer();
         mPlayer.setOnCompletionListener(mOnCompletionListener);
-        return stub;
+        return mMyBinder;
     }
 
     private MediaPlayer.OnCompletionListener mOnCompletionListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mp) {
-            try {
-                stub.next();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+            next();
         }
     };
 
@@ -47,111 +46,123 @@ public class PlayService extends Service {
         return super.onUnbind(intent);
     }
 
-    IPlayService.Stub stub = new IPlayService.Stub() {
+    @Override
+    public boolean isPlaying() {
+        return false;
+    }
 
-        @Override
-        public boolean isPlaying() throws RemoteException {
-            return false;
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void pause() {
+        if (mPlayer.isPlaying()) {
+            mPlayer.pause();
         }
+    }
 
-        @Override
-        public void stop() throws RemoteException {
-
-        }
-
-        @Override
-        public void pause() throws RemoteException {
-            if(mPlayer.isPlaying()) {
-                mPlayer.pause();
-            }
-        }
-
-        @Override
-        public void play(final int position) throws RemoteException {
-            try {
-                if (position == mCurrentPosition) {
-                    if (!mPlayer.isPlaying()) {
-                        mPlayer.start();
-                    }
-                } else {
-                    mPlayer.reset();
-                    Song song = MusicUtils.getMusicList().get(position);
-                    mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
-                    mPlayer.prepare();
+    @Override
+    public void play(final int position) {
+        try {
+            if (position == mCurrentPosition) {
+                if (!mPlayer.isPlaying()) {
                     mPlayer.start();
-                    mCurrentPosition = position;
                 }
-            } catch (IOException e) {
-                mPlayer.release();
-                mCurrentPosition = 0;
-            }
-        }
-
-        @Override
-        public int prev() throws RemoteException {
-            if (mCurrentPosition == 0) {
-                mCurrentPosition = MusicUtils.getMusicList().size()-1;
             } else {
-                mCurrentPosition = mCurrentPosition - 1;
+                mPlayer.reset();
+                Song song = MusicUtils.getMusicList().get(position);
+                mPlayer.setDataSource(getApplicationContext(), Uri.fromFile(new File(song.mSongPath)));
+                mPlayer.prepare();
+                mPlayer.start();
+                mCurrentPosition = position;
             }
-            play(mCurrentPosition);
-            return mCurrentPosition;
+            mServiceDataToActivity.refreshSongViewInfo(mCurrentPosition);
+        } catch (IOException e) {
+            mPlayer.release();
+            mCurrentPosition = 0;
+        }
+    }
+
+    @Override
+    public int prev() {
+        int tempPosition = 0;
+        if (mCurrentPosition == 0) {
+            tempPosition = MusicUtils.getMusicList().size() - 1;
+        } else {
+            tempPosition = mCurrentPosition - 1;
+        }
+        play(tempPosition);
+        return tempPosition;
+    }
+
+    @Override
+    public int next() {
+        int tempPosition = 0;
+        if (mCurrentPosition <= MusicUtils.getMusicList().size()) {
+            tempPosition = mCurrentPosition + 1;
+        }
+        play(tempPosition);
+        return tempPosition;
+    }
+
+    @Override
+    public int duration() {
+        return mPlayer.getDuration();
+    }
+
+    @Override
+    public int position() {
+        return mPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void seek(int pos) {
+        mPlayer.seekTo(pos);
+    }
+
+    @Override
+    public String getTrackName() {
+        return null;
+    }
+
+    @Override
+    public String getAlbumName() {
+        return null;
+    }
+
+    @Override
+    public long getAlbumId() {
+        return 0;
+    }
+
+    @Override
+    public String getArtistName() {
+        return null;
+    }
+
+    @Override
+    public long getArtistId() {
+        return 0;
+    }
+
+    @Override
+    public int loopNextSong() {
+        return 0;
+    }
+
+    public interface IServiceDataToActivity {
+        public void refreshSongViewInfo(int position);
+    }
+
+    public class MyBinder extends Binder {
+        PlayService getService() {
+            return PlayService.this;
         }
 
-        @Override
-        public int next() throws RemoteException {
-            if (mCurrentPosition >= MusicUtils.getMusicList().size()) {
-                mCurrentPosition = 0;
-            } else {
-                mCurrentPosition = mCurrentPosition + 1;
-            }
-            play(mCurrentPosition);
-            return mCurrentPosition;
+        public void setServiceDataToActivity(IServiceDataToActivity serviceDataToActivity){
+            mServiceDataToActivity = serviceDataToActivity;
         }
-
-        @Override
-        public int duration() throws RemoteException {
-            return mPlayer.getDuration();
-        }
-
-        @Override
-        public int position() throws RemoteException {
-            return mPlayer.getCurrentPosition();
-        }
-
-        @Override
-        public void seek(int pos) throws RemoteException {
-            mPlayer.seekTo(pos);
-        }
-
-        @Override
-        public String getTrackName() throws RemoteException {
-            return null;
-        }
-
-        @Override
-        public String getAlbumName() throws RemoteException {
-            return null;
-        }
-
-        @Override
-        public long getAlbumId() throws RemoteException {
-            return 0;
-        }
-
-        @Override
-        public String getArtistName() throws RemoteException {
-            return null;
-        }
-
-        @Override
-        public long getArtistId() throws RemoteException {
-            return 0;
-        }
-
-        @Override
-        public int loopNextSong() throws RemoteException {
-            return 0;
-        }
-    };
+    }
 }

@@ -80,7 +80,6 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         mSongItemClickListener.songListItemClick(position);
-        refreshSelectItem(position);
     }
 
     public void registerSongItemClickListener(SongItemClickListener listener){
@@ -97,7 +96,9 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         return song;
     }
     public void refresh() {
-        mSongListAdapter.notifyDataSetChanged();
+        if (mSongListAdapter != null ) {
+            mSongListAdapter.notifyDataSetChanged();
+        }
     }
 
     public void refreshSelectItem(int position) {
