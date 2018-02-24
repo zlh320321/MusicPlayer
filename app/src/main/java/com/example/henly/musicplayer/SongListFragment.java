@@ -105,6 +105,7 @@ public class SongListFragment extends Fragment implements AdapterView.OnItemClic
         Log.i(TAG, "refreshSelectItem position :" + position + "  mSongListAdapter:" + mSongListAdapter);
         if (mSongListAdapter != null) {
             mSongListAdapter.setmSelectItem(position);
+            mListView.smoothScrollToPosition(position);
             mSongListAdapter.notifyDataSetInvalidated();
         }
     }
