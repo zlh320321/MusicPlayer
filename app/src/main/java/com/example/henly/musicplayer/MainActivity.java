@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -20,13 +21,17 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements SongListFragment.SongItemClickListener, View.OnClickListener {
+    private static final String TAG = "MainActivity";
     public static final String SONG_LIST_FRAGMENT = "song_list_fragment";
     public static final String SPLASH_FRAGMENT = "splash_fragment";
     public static final int SCAN_MUSIC_FINISHED = 1000;
@@ -51,8 +56,10 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     private ImageButton mPlayOrPauseButton;
     private ImageButton mPreviousButton;
     private ImageButton mNextButton;
+    private ImageButton mQuitButton;
     private FragmentManager mFragmentManager;
     private boolean mIsPlaying = false;
+    private boolean mShouldPauseUpdateProcess = false;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -75,12 +82,14 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     private Runnable mUpdateProgressBarRunnable = new Runnable() {
         @Override
         public void run() {
-            int currentPosition = 0;
-            currentPosition = mPlayServiceBinder.position();
-            String currentSongDuration = convertSongDuration(currentPosition);
-            mSongCurrentDuration.setText(currentSongDuration);
-            mSongProgressBar.setProgress(currentPosition);
-            mHandler.postDelayed(mUpdateProgressBarRunnable, 1000);
+            if (!mShouldPauseUpdateProcess) {
+                int currentPosition = 0;
+                currentPosition = mPlayServiceBinder.position();
+                String currentSongDuration = convertSongDuration(currentPosition);
+                mSongCurrentDuration.setText(currentSongDuration);
+                mSongProgressBar.setProgress(currentPosition);
+                mHandler.postDelayed(mUpdateProgressBarRunnable, 1000);
+            }
         }
     };
 
@@ -90,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
             PlayService.MyBinder myBinder = (PlayService.MyBinder)service;
             mPlayServiceBinder = myBinder.getService();
             myBinder.setServiceDataToActivity(mServiceDataToActivity);
-
+            mServiceDataToActivity.refreshSongViewInfo(mCurrentSong);
         }
 
         @Override
@@ -133,12 +142,14 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                mShouldPauseUpdateProcess = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                mShouldPauseUpdateProcess = false;
+                mPlayServiceBinder.seek(seekBar.getProgress());
+                mHandler.post(mUpdateProgressBarRunnable);
             }
         });
         mSongCurrentDuration = (TextView) songControlFragment.getView().findViewById(R.id.song_current_duration);
@@ -149,6 +160,11 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
         mPreviousButton.setOnClickListener(this);
         mNextButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_next);
         mNextButton.setOnClickListener(this);
+        mQuitButton = (ImageButton) songControlFragment.getView().findViewById(R.id.song_exit);
+        mQuitButton.setOnClickListener(this);
+        if (savedInstanceState != null) {
+            mCurrentSong = savedInstanceState.getInt("currentSong");
+        }
 
     }
 
@@ -183,6 +199,24 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("currentSong",mCurrentSong);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mSplashScreen.removeSplashScreen();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.song_play_or_pause:
@@ -194,13 +228,23 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
             case R.id.song_previous:
                     mCurrentSong = mPlayServiceBinder.prev();
                 break;
+            case R.id.song_exit:
+                mPlayServiceBinder.stop();
+                finish();
+                break;
             default:
                 break;
         }
 
     }
 
-    public void startPlayOrPause(int position,boolean change) {
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Toast.makeText(this,"keyCode:"+keyCode+" KeyEvent: "+event,Toast.LENGTH_LONG).show();
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void startPlayOrPause(int position, boolean change) {
             if (mPlayServiceBinder != null) {
                 if (!mIsPlaying || change) {
                     mPlayServiceBinder.play(position);
@@ -251,6 +295,7 @@ public class MainActivity extends AppCompatActivity implements SongListFragment.
     private PlayService.IServiceDataToActivity mServiceDataToActivity = new PlayService.IServiceDataToActivity() {
         @Override
         public void refreshSongViewInfo(int position) {
+            Log.i(TAG,"refreshSongViewInfo mCurrentSong :"+position);
             mCurrentSong = position;
             mSongListFragment.refreshSelectItem(position);
             int songDuration = mPlayServiceBinder.duration();

@@ -62,7 +62,6 @@ public class SplashScreen {
     }
 
     public void removeSplashScreen() {
-        Log.i("zhanglh","removeSplashScreen");
         if (mSplashDialog != null && mSplashDialog.isShowing()) {
             Log.i("zhanglh","removeSplashScreen success");
             mSplashDialog.dismiss();

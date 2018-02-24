@@ -32,7 +32,6 @@ public class MusicUtils {
                 song.mSongPath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
                 song.mSoneDuration = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
                 song.mSongSize = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
-                Log.i("zhanglh",song.toString());
                 mSongList.add(song);
             } while (cursor.moveToNext());
         }

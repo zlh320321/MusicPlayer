@@ -6,8 +6,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.RemoteException;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +21,6 @@ public class PlayService extends Service implements IPlayService {
 
     @Override
     public IBinder onBind(Intent intent) {
-
         mPlayer = new MediaPlayer();
         mPlayer.setOnCompletionListener(mOnCompletionListener);
         return mMyBinder;
@@ -53,7 +50,9 @@ public class PlayService extends Service implements IPlayService {
 
     @Override
     public void stop() {
-
+        stopSelf();
+        mPlayer.release();
+        mCurrentPosition = 0;
     }
 
     @Override
